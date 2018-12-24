@@ -9,7 +9,9 @@
                             This tool allows you to pick a random Steam game from your library.<br>
                             Just enter your <a href="https://steamcommunity.com/dev/apikey">API key</a>,
                             your <a href="https://steamid.io">Steam ID</a> and you're good to go!<br>
-                            <span style="font-size: 14px">The server does <u>not</u> store any of this information.</span>
+                            <span style="font-size: 14px">The server does <u>not</u> store any of this information.
+                            Hell, the server doesn't even get your API key.<br>
+                            Your list of games does get cached to the client until you refresh, though.</span>
 
                             <v-form ref="form" v-model="valid" lazy-validation>
                                 <v-layout row wrap style="width: 50%; margin: auto">
@@ -91,7 +93,14 @@ export default {
             clearItTimeout: null,
             doneFetching: false,
             gameid: null,
-            gamename: null
+            gamename: null,
+            gameCache: null,
+
+            badChars: [ // characters which don't render properly in Comfortaa
+                '™',
+                '©',
+                '®'
+            ]
         }
     },
     methods: {
@@ -110,18 +119,25 @@ export default {
             this.isLoading = true
             clearTimeout(this.clearItTimeout)
 
-            let getgamesurl =
-                `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.apikey}&steamid=${this.steamid}&format=json`
-            let t = await axios.get(getgamesurl)
-            console.log(t)
-            let games = t.data.response.games
+            if (!this.gameCache) {
+                this.loadingStep = "Getting games..."
+                let getgamesurl =
+                    `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.apikey}&steamid=${this.steamid}&format=json`
+                let t = await axios.get(getgamesurl)
+                this.gameCache = t.data.response.games
+            }
+            let games = this.gameCache
             this.loadingStep = "Fetching game info..."
             let rg = games[Math.floor(Math.random() * games.length)]
+            let app = rg.appid
             console.log(rg)
-            let gameinfourl =
-                `http://localhost:23132/api/gi/${rg.appid}`
-            t = await axios.get(gameinfourl)
-            let bamana = t.data
+            let steamapi =
+                `https://store.steampowered.com/api/appdetails/?appids=${app}`
+            let t = await axios.get(`https://api.allorigins.ml/get?method=raw&url=${encodeURIComponent(steamapi)}`)
+            let bamana = t.data[app].data
+            let name = bamana.name
+            for (let i of this.badChars) name = name.replace(i, '')
+            console.log(bamana)
             this.doneFetching = true
             this.gameid = bamana.steam_appid
             this.gamename = bamana.name
