@@ -23,7 +23,7 @@ module.exports = {
   /*
   ** Customize the progress-bar color
   */
-  loading: { color: '#fff' },
+  loading: { color: '#000' },
 
   /*
   ** Global CSS
@@ -61,7 +61,7 @@ module.exports = {
     ** You can extend webpack config here
     */
     extend(config, ctx) {
-      
+      if(!ctx.isDev) config.output.publicPath = "/steam/dist/"
     }
   }
 }
