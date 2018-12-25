@@ -126,21 +126,25 @@ export default {
                 let t = await axios.get(getgamesurl)
                 this.gameCache = t.data.response.games
             }
-            let games = this.gameCache
-            this.loadingStep = "Fetching game info..."
-            let rg = games[Math.floor(Math.random() * games.length)]
-            let app = rg.appid
-            console.log(rg)
-            let steamapi =
-                `https://store.steampowered.com/api/appdetails/?appids=${app}`
-            let t = await axios.get(`https://api.allorigins.ml/get?method=raw&url=${encodeURIComponent(steamapi)}`)
-            let bamana = t.data[app].data
-            let name = bamana.name
-            for (let i of this.badChars) name = name.replace(i, '')
-            console.log(bamana)
-            this.doneFetching = true
-            this.gameid = bamana.steam_appid
-            this.gamename = bamana.name
+            try {
+                let games = this.gameCache
+                this.loadingStep = "Fetching game info..."
+                let rg = games[Math.floor(Math.random() * games.length)]
+                let app = rg.appid
+                console.log(rg)
+                let steamapi =
+                    `https://store.steampowered.com/api/appdetails/?appids=${app}`
+                let t = await axios.get(`https://api.allorigins.ml/get?method=raw&url=${encodeURIComponent(steamapi)}`)
+                let bamana = t.data[app].data
+                let name = bamana.name
+                for (let i of this.badChars) name = name.replace(i, '')
+                console.log(bamana)
+                this.doneFetching = true
+                this.gameid = bamana.steam_appid
+                this.gamename = bamana.name
+            } catch(e) {
+                this.terminate("oopsie woopsie! couldn't get game info! this is probably steam messing up <a href=\"https://being-trans-and-in-italy-is.theworstme.me/47813f.png\">or games with no store pages</a>")
+            }
 
             this.isLoading = false
         }
