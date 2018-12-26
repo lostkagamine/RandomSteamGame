@@ -122,7 +122,7 @@ export default {
             if (!this.gameCache) {
                 this.loadingStep = "Getting games..."
                 let getgamesurl =
-                    `https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=${this.apikey}&steamid=${this.steamid}&format=json`
+                    `http${nuxt.dev ? '' : 's'}://${process.env.VUE_APP_PROXY_HOST}:${process.env.VUE_APP_PROXY_PORT}/games/${this.steamid}`
                 let t = await axios.get(getgamesurl)
                 this.gameCache = t.data.response.games
             }

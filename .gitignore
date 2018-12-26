@@ -79,3 +79,8 @@ dist
 
 # IDE
 .idea
+
+proxy.ini
+test.ini
+ini.test.js
+test.js
