@@ -7,26 +7,14 @@
                         <h1 style="font-family: 'Comfortaa'; font-size: 36px">Random Steam Game Picker</h1><br>
                         <p style="font-family: 'Roboto'; font-size: 18px">
                             This tool allows you to pick a random Steam game from your library.<br>
-                            Just enter your <a href="https://steamcommunity.com/dev/apikey">API key</a>,
-                            your <a href="https://steamid.io">Steam ID</a> and you're good to go!<br>
-                            <span style="font-size: 14px">The server does <u>not</u> store any of this information.
-                            Hell, the server doesn't even get your API key.<br>
-                            Your list of games does get cached to the client until you refresh, though.</span>
+                            Just enter your <a href="https://steamid.io">Steam ID</a> and you're good to go!<br>
+                            <span style="font-size: 14px">The server does <u>not</u> store any of this information.<br>
+                            Your list of games does get cached to your browser until you refresh, though.</span></p>
 
                             <v-form ref="form" v-model="valid" lazy-validation>
-                                <v-layout row wrap style="width: 50%; margin: auto">
-                                    <v-flex xs6>
-                                        <v-text-field d-inline-block
-                                        v-model="apikey" label="API Key" class="mr-2" required
-                                        :rules="valrules"/>
-                                    </v-flex>
-                                    <v-flex xs6>
-                                        <v-text-field d-inline-block
-                                        v-model="steamid" label="Steam ID" class="ml-2"
-                                        required :rules="valrules"/>
-                                    </v-flex>
-                                </v-layout>
-
+                                <v-text-field
+                                    v-model="steamid" label="Steam ID" style="width: 25%; margin: auto"
+                                    required :rules="valrules"/>
                                 <template v-if="isLoading == true">
                                     <v-progress-circular indeterminate class="mr-2"/>
                                     <span>{{ loadingStep }}</span>
@@ -49,7 +37,6 @@
                                 <h1 style="font-family: 'Comfortaa'; font-size: 24px" class="mt-0">{{ gamename }}</h1>
                                 <a :href="`steam://rungameid/${gameid}`">Launch</a> | <a :href="`https://store.steampowered.com/app/${gameid}`">View on Store</a>
                             </template>
-                        </p>
                         <v-footer app class="ma-1 px-2">
                             <v-switch v-model="isDark" label="Dark" class="ml-2"></v-switch>
                             <span style="font-size: 18px; font-family: 'Roboto'; width: 100%" class="text-xs-right ma-3">
@@ -122,9 +109,9 @@ export default {
             if (!this.gameCache) {
                 this.loadingStep = "Getting games..."
                 let getgamesurl =
-                    `http${nuxt.dev ? '' : 's'}://${process.env.VUE_APP_PROXY_HOST}:${process.env.VUE_APP_PROXY_PORT}/games/${this.steamid}`
+                    `http${process.env.NODE_ENV === "development" ? '' : 's'}://${process.env.VUE_APP_PROXY_HOST}:${process.env.VUE_APP_PROXY_PORT}/games/${this.steamid}`
                 let t = await axios.get(getgamesurl)
-                this.gameCache = t.data.response.games
+                this.gameCache = t.data
             }
             try {
                 let games = this.gameCache
@@ -133,8 +120,8 @@ export default {
                 let app = rg.appid
                 console.log(rg)
                 let steamapi =
-                    `https://store.steampowered.com/api/appdetails/?appids=${app}`
-                let t = await axios.get(`https://api.allorigins.ml/get?method=raw&url=${encodeURIComponent(steamapi)}`)
+                    `http${process.env.NODE_ENV === "development" ? '' : 's'}://${process.env.VUE_APP_PROXY_HOST}:${process.env.VUE_APP_PROXY_PORT}/details/${app}`
+                let t = await axios.get(steamapi)
                 let bamana = t.data[app].data
                 let name = bamana.name
                 for (let i of this.badChars) name = name.replace(i, '')
@@ -143,7 +130,8 @@ export default {
                 this.gameid = bamana.steam_appid
                 this.gamename = bamana.name
             } catch(e) {
-                this.terminate("oopsie woopsie! couldn't get game info! this is probably steam messing up <a href=\"https://being-trans-and-in-italy-is.theworstme.me/47813f.png\">or games with no store pages</a>")
+                console.log(e) // why wasn't i doing this?
+                this.terminate("oopsie woopsie! couldn't get game info! this is probably steam messing up <a href=\"https://steam.theworstme.me/47813f.png\">or games with no store pages</a>")
             }
 
             this.isLoading = false
