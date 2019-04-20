@@ -7,13 +7,13 @@
                         <h1 style="font-family: 'Comfortaa'; font-size: 36px">Random Steam Game Picker</h1><br>
                         <p style="font-family: 'Roboto'; font-size: 18px">
                             This tool allows you to pick a random Steam game from your library.<br>
-                            Just enter your <a href="https://steamid.io">Steam ID</a> and you're good to go!<br>
+                            Just enter your <a href="https://steamid.io">SteamID64</a> and you're good to go!<br>
                             <span style="font-size: 14px">The server does <u>not</u> store any of this information.<br>
-                            Your list of games does get cached to your browser until you refresh, though.</span></p>
+                            This picks any game you have played (i.e. have more than 0 minutes of playtime on), or own.</span></p>
 
                             <v-form ref="form" v-model="valid" lazy-validation>
                                 <v-text-field
-                                    v-model="steamid" label="Steam ID" style="width: 25%; margin: auto"
+                                    v-model="steamid" label="SteamID64" style="width: 25%; margin: auto"
                                     required :rules="valrules"/>
                                 <template v-if="isLoading == true">
                                     <v-progress-circular indeterminate class="mr-2"/>
@@ -30,7 +30,7 @@
                                 transition="slide-x-transition"
                                 style="width: 50%"
                                 outline
-                                class="pt-2">{{error}}</v-alert><br>
+                                class="pt-2"><span v-html="error"></span></v-alert><br>
 
                             <template v-if="!!doneFetching">
                                 <p class="mb-0">Your randomly chosen game is</p>
